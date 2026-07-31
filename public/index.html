@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<title>MartlweraAI — ქართული მართლწერის შემმოწმებელი</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Georgian:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap');
+
+  :root{
+    --parchment:#F3E8D2;
+    --parchment-deep:#E9D9B8;
+    --ink:#2B1A14;
+    --wine:#7A2131;
+    --wine-deep:#5A1522;
+    --gold:#B8862F;
+    --gold-soft:#D9B15F;
+    --teal:#2F5C53;
+    --diff-bg:#F6D9AE;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background:var(--parchment);
+    color:var(--ink);
+    font-family:'Noto Sans Georgian', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(122,33,49,0.05), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(47,92,83,0.06), transparent 45%);
+    min-height:100vh;
+    padding:48px 20px 40px;
+  }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  .hero{
+    text-align:center;
+    margin-bottom:38px;
+    position:relative;
+  }
+
+  .ornament{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:14px;
+    color:var(--gold);
+  }
+  .ornament svg{ width:26px; height:26px; }
+  .ornament .line{
+    height:1px;
+    width:70px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  h1{
+    font-family:'Noto Serif Georgian', serif;
+    font-weight:700;
+    font-size:clamp(32px, 6vw, 46px);
+    color:var(--wine-deep);
+    margin:0 0 10px;
+    letter-spacing:0.5px;
+  }
+
+  .subtitle{
+    font-size:15.5px;
+    color:#5b4636;
+    max-width:480px;
+    margin:0 auto;
+    line-height:1.6;
+  }
+
+  .card{
+    background:#FBF4E4;
+    border:1px solid rgba(122,33,49,0.15);
+    border-radius:6px;
+    box-shadow:0 1px 2px rgba(43,26,20,0.05), 0 12px 30px -18px rgba(43,26,20,0.35);
+    padding:28px 26px 24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:4px;
+    background:linear-gradient(90deg, var(--wine), var(--gold) 50%, var(--teal));
+  }
+
+  label.field-label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    color:var(--wine-deep);
+    margin-bottom:8px;
+  }
+
+  textarea{
+    width:100%;
+    min-height:170px;
+    resize:vertical;
+    border:1.5px solid rgba(122,33,49,0.25);
+    background:#FFFCF4;
+    border-radius:4px;
+    padding:16px 16px;
+    font-family:'Noto Sans Georgian', sans-serif;
+    font-size:17px;
+    line-height:1.7;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea:focus{
+    border-color:var(--wine);
+    box-shadow:0 0 0 3px rgba(122,33,49,0.12);
+  }
+  textarea:focus-visible{ outline:2px solid var(--wine); outline-offset:2px; }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+
+  button{
+    font-family:'Noto Sans Georgian', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    border-radius:4px;
+    border:none;
+    transition:transform .08s ease, opacity .15s ease, background .15s ease;
+  }
+  button:active{ transform:translateY(1px); }
+  button:focus-visible{ outline:2px solid var(--wine); outline-offset:2px; }
+
+  .btn-primary{
+    background:var(--wine);
+    color:#FBF4E4;
+    padding:12px 26px;
+  }
+  .btn-primary:hover{ background:var(--wine-deep); }
+  .btn-primary:disabled{ opacity:0.55; cursor:default; }
+
+  .btn-ghost{
+    background:transparent;
+    color:var(--teal);
+    padding:12px 8px;
+    border:1px solid transparent;
+  }
+  .btn-ghost:hover{ text-decoration:underline; }
+
+  .status{
+    font-size:13.5px;
+    color:#7a6752;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .spinner{
+    width:14px; height:14px;
+    border-radius:50%;
+    border:2px solid rgba(122,33,49,0.25);
+    border-top-color:var(--wine);
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  .spinner.on{ display:inline-block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .result-wrap{
+    margin-top:26px;
+    display:none;
+  }
+  .result-wrap.on{ display:block; }
+
+  .result-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:8px;
+  }
+
+  .result-box{
+    background:#FFFCF4;
+    border:1.5px solid rgba(47,92,83,0.3);
+    border-radius:4px;
+    padding:16px 18px;
+    font-size:17px;
+    line-height:1.85;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  mark{
+    background:var(--diff-bg);
+    color:var(--wine-deep);
+    padding:1px 3px;
+    border-radius:3px;
+    font-weight:600;
+  }
+
+  .no-changes{
+    color:var(--teal);
+    font-size:14.5px;
+    margin-top:10px;
+  }
+
+  .error-box{
+    margin-top:18px;
+    background:#FBEAEA;
+    border:1px solid rgba(122,33,49,0.35);
+    color:var(--wine-deep);
+    padding:12px 16px;
+    border-radius:4px;
+    font-size:14.5px;
+    display:none;
+  }
+  .error-box.on{ display:block; }
+
+  .copied-flag{
+    font-size:13px;
+    color:var(--teal);
+    opacity:0;
+    transition:opacity .2s ease;
+  }
+  .copied-flag.on{ opacity:1; }
+
+  footer{
+    text-align:center;
+    margin-top:34px;
+    font-size:13px;
+    color:#8a7860;
+    letter-spacing:0.2px;
+  }
+  footer .divider{
+    width:36px; height:1px;
+    background:var(--gold-soft);
+    margin:0 auto 12px;
+  }
+
+  @media (max-width:520px){
+    .card{ padding:22px 18px 20px; }
+    .actions{ gap:10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="ornament">
+      <div class="line"></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M12 3 L12 21 M6 7 Q12 3 18 7 M6 17 Q12 21 18 17" stroke-linecap="round"/>
+      </svg>
+      <div class="line"></div>
+    </div>
+    <h1>MartlweraAI</h1>
+    <p class="subtitle">ჩასვით ქართული ტექსტი — გასწორდება მართლწერის შეცდომები და ორთოგრაფიული ხარვეზები, ხოლო შედეგში მონიშნული იქნება ცვლილებები.</p>
+  </div>
+
+  <div class="card">
+    <label class="field-label" for="input-text">თქვენი ტექსტი</label>
+    <textarea id="input-text" placeholder="ჩაწერეთ ან ჩასვით ტექსტი აქ..."></textarea>
+
+    <div class="actions">
+      <button class="btn-primary" id="check-btn">შემოწმება</button>
+      <button class="btn-ghost" id="clear-btn">გასუფთავება</button>
+      <div class="status">
+        <span class="spinner" id="spinner"></span>
+        <span id="status-text"></span>
+      </div>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <div class="result-wrap" id="result-wrap">
+      <div class="result-head">
+        <label class="field-label" style="margin-bottom:0;">გასწორებული ტექსტი</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="copied-flag" id="copied-flag">დაკოპირდა ✓</span>
+          <button class="btn-ghost" id="copy-btn" style="padding:6px 4px;">კოპირება</button>
+        </div>
+      </div>
+      <div class="result-box" id="result-box"></div>
+      <div class="no-changes" id="no-changes" style="display:none;">შეცდომები ვერ მოიძებნა — ტექსტი მართებულია.</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="divider"></div>
+    გაკეთებულია ალექსანდრე ჯავარაშვილის მიერ
+  </footer>
+
+</div>
+
+<script>
+const inputEl = document.getElementById('input-text');
+const checkBtn = document.getElementById('check-btn');
+const clearBtn = document.getElementById('clear-btn');
+const spinner = document.getElementById('spinner');
+const statusText = document.getElementById('status-text');
+const errorBox = document.getElementById('error-box');
+const resultWrap = document.getElementById('result-wrap');
+const resultBox = document.getElementById('result-box');
+const noChangesEl = document.getElementById('no-changes');
+const copyBtn = document.getElementById('copy-btn');
+const copiedFlag = document.getElementById('copied-flag');
+
+let lastCorrected = '';
+
+function escapeHtml(str){
+  return str.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+function tokenize(str){
+  return str.match(/\S+|\s+/g) || [];
+}
+
+function diffHighlight(original, corrected){
+  const a = tokenize(original);
+  const b = tokenize(corrected);
+  const n = a.length, m = b.length;
+  const dp = Array.from({length:n+1}, () => new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--){
+    for(let j=m-1;j>=0;j--){
+      dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+    }
+  }
+  let i=0, j=0;
+  let html = '';
+  let changed = false;
+  while(i<n && j<m){
+    if(a[i]===b[j]){
+      html += escapeHtml(b[j]);
+      i++; j++;
+    } else if(dp[i+1][j] >= dp[i][j+1]){
+      i++;
+      changed = true;
+    } else {
+      html += '<mark>' + escapeHtml(b[j]) + '</mark>';
+      j++;
+      changed = true;
+    }
+  }
+  while(j<m){
+    html += '<mark>' + escapeHtml(b[j]) + '</mark>';
+    j++;
+    changed = true;
+  }
+  return { html, changed };
+}
+
+function setLoading(on){
+  checkBtn.disabled = on;
+  spinner.classList.toggle('on', on);
+  statusText.textContent = on ? 'მოწმდება...' : '';
+}
+
+function showError(msg){
+  errorBox.textContent = msg;
+  errorBox.classList.add('on');
+}
+
+function clearError(){
+  errorBox.classList.remove('on');
+  errorBox.textContent = '';
+}
+
+async function checkSpelling(){
+  const text = inputEl.value.trim();
+  if(!text){
+    showError('გთხოვთ ჯერ ჩაწეროთ ტექსტი.');
+    return;
+  }
+  clearError();
+  resultWrap.classList.remove('on');
+  copiedFlag.classList.remove('on');
+  setLoading(true);
+
+  try{
+    const response = await fetch('/api/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error || ('სერვერმა უპასუხა შეცდომით (' + response.status + ')'));
+    }
+
+    const corrected = data.corrected || '';
+    if(!corrected){
+      throw new Error('გასწორებული ტექსტი ვერ მოიძებნა პასუხში.');
+    }
+
+    lastCorrected = corrected;
+    const { html, changed } = diffHighlight(text, corrected);
+    resultBox.innerHTML = html;
+    noChangesEl.style.display = changed ? 'none' : 'block';
+    resultWrap.classList.add('on');
+
+  } catch(err){
+    showError('შეცდომა: ' + (err.message || 'უცნობი შეცდომა, სცადეთ ხელახლა.'));
+  } finally {
+    setLoading(false);
+  }
+}
+
+checkBtn.addEventListener('click', checkSpelling);
+
+clearBtn.addEventListener('click', () => {
+  inputEl.value = '';
+  resultWrap.classList.remove('on');
+  clearError();
+  inputEl.focus();
+});
+
+copyBtn.addEventListener('click', async () => {
+  if(!lastCorrected) return;
+  try{
+    await navigator.clipboard.writeText(lastCorrected);
+    copiedFlag.classList.add('on');
+    setTimeout(() => copiedFlag.classList.remove('on'), 1800);
+  } catch(e){
+    const range = document.createRange();
+    range.selectNode(resultBox);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    copiedFlag.classList.add('on');
+    setTimeout(() => copiedFlag.classList.remove('on'), 1800);
+  }
+});
+
+inputEl.addEventListener('keydown', (e) => {
+  if((e.metaKey || e.ctrlKey) && e.key === 'Enter'){
+    checkSpelling();
+  }
+});
+</script>
+
+</body>
+</html>
