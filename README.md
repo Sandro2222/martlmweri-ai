@@ -109,17 +109,23 @@ git ls-files | grep .env
 
 1. შედით [vercel.com](https://vercel.com)-ზე GitHub ანგარიშით.
 2. **Add New → Project** და აირჩიეთ თქვენი რეპოზიტორია.
-3. Framework Preset დატოვეთ **Other** — `vercel.json` ყველაფერს თავად აწესებს.
-4. **Environment Variables** განყოფილებაში დაამატეთ:
+3. **Framework Preset** — აირჩიეთ **Other**. ამ შემთხვევაში Vercel ავტომატურად მიიჩნევს `public/`-ს სტატიკურ საქაღალდედ, ხოლო `api/`-ს — serverless ფუნქციებად.
+4. **Build Command** — ჩართეთ **Override** და დატოვეთ **ცარიელი**. პროექტს build არ სჭირდება.
+5. **Output Directory** — **არაფერი** ჩაწეროთ (დატოვეთ ნაგულისხმევი).
+6. **Environment Variables** განყოფილებაში დაამატეთ:
 
    | Name | Value |
    | --- | --- |
    | `GROQ_API_KEY` | `gsk_...` (თქვენი რეალური გასაღები) |
    | `GROQ_MODEL` | `openai/gpt-oss-120b` (არასავალდებულო) |
 
-5. **Deploy**.
+7. **Deploy**.
 
 შემდეგი push-ები `main`-ზე ავტომატურად განაახლებს საიტს.
+
+### ხშირი შეცდომა: `No entrypoint found in output directory: "public"`
+
+ეს ნიშნავს, რომ Vercel `public/`-ს **build-ის შედეგად** მიიჩნევს და მასში entrypoint-ს ეძებს. მიზეზი ჩვეულებრივ `outputDirectory`-ის ხელით მითითებაა (`vercel.json`-ში ან Project Settings-ში). გამოსავალი: **წაშალეთ** `outputDirectory` — Framework Preset „Other" თავისით ემსახურება `public/`-ს, თუ ის არსებობს.
 
 **შენიშვნა:** Vercel-ის serverless ინსტანციები დროებითია, ამიტომ `api/check.js`-ის rate limiter მხოლოდ ერთი „თბილი" ინსტანციის ფარგლებში მუშაობს. მკაცრი გლობალური ლიმიტისთვის დაგჭირდებათ საერთო საცავი (Vercel KV ან Upstash Redis).
 

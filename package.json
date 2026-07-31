@@ -9,7 +9,7 @@
     "test": "node test-guard.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
