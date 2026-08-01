@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node test-guard.js"
+    "test": "node test-guard.js && node test-rules.js && node test-dictionary.js",
+    "bench": "node bench/run.js"
   },
   "engines": {
     "node": "24.x"

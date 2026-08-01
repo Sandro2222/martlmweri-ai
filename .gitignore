@@ -1,5 +1,6 @@
 # Secrets — never commit these
 .env
+ApiGemini.txt
 .env.local
 .env*.local
 
@@ -9,7 +10,7 @@ node_modules/
 # Vercel
 .vercel/
 
-# Logs / OS junk
+# Logs / OS junk (includes bench/*.log run output)
 *.log
 npm-debug.log*
 .DS_Store
